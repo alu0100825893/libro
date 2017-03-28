@@ -5,6 +5,9 @@ var express = require('express');
 var app = express();
 
 
+var path = require('path');
+var favicon = require('serve-favicon');
+
 var sassMiddleware = require('node-sass-middleware');    
 
 
@@ -15,7 +18,9 @@ app.set('port', (process.env.PORT || 5000));
 app.use("/stylesheets", express.static(__dirname + '/views'));
 app.use(
   express.static(__dirname + '/public')
-)
+);
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
 app.use(
   express.static(__dirname + '/views')
 );
