@@ -4,9 +4,7 @@ var app = express();
 var path = require('path');
 var favicon = require('serve-favicon');
 
-/*
 var sassMiddleware = require('node-sass-middleware');    
-*/
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -22,7 +20,6 @@ app.set('view engine', 'pug')
 
 
 //SASS
-/*
 app.use(
     sassMiddleware({
         src: __dirname + '/public/stylesheets', 
@@ -31,7 +28,6 @@ app.use(
         debug: true // obvious
     })
 );
-*/
 
 app.get('/', function (req, res) {
   res.render('index', { title : 'Home' }
