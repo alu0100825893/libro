@@ -16,7 +16,7 @@
     "mocha": "latest",
     "node-sass-middleware": "*",
     "node-static": "*",
-    "pug": "*",
+    "pug": "^0.1.0",
     "serve-favicon": "^2.4.2",
     "sinon": "*",
     "underscore": "*"
