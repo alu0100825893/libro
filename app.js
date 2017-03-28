@@ -8,16 +8,11 @@ var sassMiddleware = require('node-sass-middleware');
 
 app.set('port', (process.env.PORT || 5000));
 
-app.use(
-  express.static(__dirname + '/public')
-);
+app.use(express.static(__dirname + '/public'));
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 app.set('views', __dirname + '/views')
 app.set('view engine', 'pug')
-
-//app.use(express.logger('dev'))
-
 
 //SASS
 app.use(
