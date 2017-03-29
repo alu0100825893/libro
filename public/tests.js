@@ -6,7 +6,7 @@
   suite('parser', function() {
     setup(function() {
     });
-    test('Numbers are parsed correctly', function() {
+    test('Numbers are parsed correctly', () => {
       original.value = '4';
       $('button').trigger('click');
       console.log(OUTPUT.innerHTML);
