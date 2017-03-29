@@ -20,5 +20,8 @@
                                 right: {type: "NUM", value: 2}
       });
     });
+    test('Bad expressions throw exceptions', () => {
+      assert.throws(() => parse('3 + (4+2))'), /Syntax\s+Error/i);
+    });
   });
 }).call(this);
