@@ -36,3 +36,55 @@ indicando el estado de las pruebas en Travis y enlazando a las mismas.
 * [Apuntes: Pruebas. Should](https://casianorodriguezleon.gitbooks.io/ull-esit-1617/content/apuntes/pruebas/mocha.html#shouldl)
 * [Apuntes: Integración Contínua. Travis](https://casianorodriguezleon.gitbooks.io/ull-esit-1617/content/apuntes/pruebas/travis.html)
 * [node-sass-middleware](https://github.com/sass/node-sass-middleware/blob/master/README.md)
+
+### Gramática Inicial
+
+1.  Σ = { ADDOP, MULOP, '(', ')', NUM, ',', ID, '=' },
+2.  V = {  comma, expression, term, factor, assign }
+3.  Productions:
+
+    1. assign → ID '=' assing | comma
+    1. comma  → expression (',' expression)*
+    1.  expression → term ( ADDOP term)* 
+    2.  term → factor (MULOP factor)*
+    3.  factor → '(' assign ')' | '(' comma ')' | NUM | ID
+    
+    1. program → block '.'
+    1. block → declaration (';' declaration) * 
+    1. declaration → const' ID '=' NUM (',' ID '=' NUM) * | 'var' ID (',' ID ) * | 'procedure' ID 'begin' block 'end' | statement
+    1. statement → ID '=' expression | 'call' ID | 'if' condition 'then' statement | 'while' condition 'do' statement
+        | 'begin' statement (';' statement) * 'end'
+    1. condition → expression COMPARISON expression
+    1.  expression → term ( ADDOP term) *  
+    2.  term → factor (MULOP factor) *
+    3.  factor → '(' expression ')' | NUM | ID
+    
+    1. program → block '.'
+    1. block → declaration functions statement
+    1. declaration → (const' ID '=' NUM (',' ID '=' NUM) *)?  ('var' ID (',' ID ) *)?
+    1. functions → ('procedure' ID 'begin' block 'end')*
+    
+    1. statement → ID '=' expression | 'call' ID | 'if' condition 'then' statement | 'while' condition 'do' statement
+        | 'begin' statement (';' statement) * 'end'
+    1. condition → expression COMPARISON expression
+    1.  expression → term ( ADDOP term) *  
+    2.  term → factor (MULOP factor) *
+    3.  factor → '(' expression ')' | NUM | ID
+    
+    const a = 8;
+    var x, squ;
+
+    procedure square;
+    begin
+       squ = x * x
+    end;
+    
+    begin
+       x := 1;
+       while x <= 10 do
+       begin
+          call square;
+          ! squ;
+          x := x + 1
+       end
+    end.

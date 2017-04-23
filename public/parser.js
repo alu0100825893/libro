@@ -35,9 +35,16 @@
       MULTOP: /[*\/]/g
     };
     RESERVED_WORD = {
-      p: "P",
       "if": "IF",
-      then: "THEN"
+      then: "THEN",
+      while: "WHILE",
+      do: "DO",
+      call: "CALL",
+      begin: "BEGIN",
+      end: "END",
+      const: "CONST",
+      var: "VAR",
+      procedure: "PROCEDURE"
     };
     make = function(type, value) {
       return {
@@ -97,6 +104,7 @@
 
   var parse = function(input) {
     var condition, expression, factor, lookahead, match, statement, statements, term, tokens, tree;
+    var declaration, block;
     tokens = input.tokens();
     lookahead = tokens.shift();
     match = function(t) {
@@ -108,6 +116,177 @@
       } else {
         throw ("Syntax Error. Expected " + t + " found '") + lookahead.value + "' near '" + input.substr(lookahead.from) + "'";
       }
+    };
+    
+    block = function() {
+      var left, result, right, type;
+      
+      left = [declaration()];
+      while (lookahead && lookahead.type === ";") {
+        match(";");
+      
+        left.push(declaration());
+      }
+ 
+      result = {
+        type: "BLOCK",
+        block: left
+      };
+      return result;
+    };
+    
+    declaration = function() {
+      var left, result, right;
+      result = {};
+      
+      if (lookahead && lookahead.type === "CONST") {
+        var constants = [];
+        match("CONST");
+        
+        left = {}
+        left["ID"] = lookahead.value;
+        match("ID");
+        match("=");
+        left["value"] = lookahead.value;
+        match("NUM");
+        constants.push(left);
+        
+        while (lookahead && lookahead.type === ",") {
+          match(",");
+          
+          left = {};
+          left["ID"] = lookahead.value;
+          match("ID");
+          match("=");
+          left["value"] = lookahead.value;
+          match("NUM");
+          constants.push(left);
+        }
+        
+        result["CONST"] = constants;
+      } else if (lookahead && lookahead.type === "VAR") {
+          var variables = [];
+          match("VAR");  
+          
+          left = {}
+          left["ID"] = lookahead.value;
+          match("ID");
+          variables.push(left);
+          
+          while (lookahead && lookahead.type === ",") {
+            match(",");
+            
+            left = {};
+            left["ID"] = lookahead.value;
+            match("ID");
+            variables.push(left);
+          }
+          
+          result["VARIABLES"] = variables;
+      } else if (lookahead && lookahead.type === "PROCEDURE") {
+        match("PROCEDURE");
+        left = lookahead.value;
+        match("ID");
+        match("BEGIN");
+        right = block();
+        match("END");
+        
+        result = {
+          type: "PROCEDURE",
+          id: left,
+          block: right
+        };
+      } else if (lookahead) {
+          left = statement();
+          result = {
+            type: "LEFT",
+            value: left
+          };
+        
+      } else {
+          throw "Syntax Error. Expected identifier but found " + (lookahead ? lookahead.value : "end of input") + (" near '" + (input.substr(lookahead.from)) + "'");
+        }
+        return result;
+    }
+    
+    statement = function() {
+      var left, result, right;
+      result = null;
+      if (lookahead && lookahead.type === "ID") {
+        left = {
+          type: "ID",
+          value: lookahead.value
+        };
+        match("ID");
+        match("=");
+        right = expression();
+        result = {
+          type: "=",
+          left: left,
+          right: right
+        };
+      } else if (lookahead && lookahead.type === "WHILE") {
+          match("WHILE");
+          left = condition();
+          match("DO");
+          right = statement();
+          result = {
+            type: "WHILEDO",
+            left: left,
+            right: right
+          };
+      } else if (lookahead && lookahead.type === "IF") {
+        match("IF");
+        left = condition();
+        match("THEN");
+        right = statement();
+        result = {
+          type: "IF",
+          left: left,
+          right: right
+        };
+      } else if (lookahead && lookahead.type === "CALL") {
+          match("CALL");
+          result = {
+            type: "CALL",
+            value: lookahead.value
+          };
+          match("ID");
+      } else if (lookahead && lookahead.type === "BEGIN") {
+          match("BEGIN");
+          left = [statement()];
+          
+          while (lookahead && lookahead.type === ";") {
+            match(";");
+            left.push(statement());
+          }
+          if (left.length === 1) {
+            left = left[0];
+          } 
+          
+          match("END");
+          result = {
+            type: "BEGINEND",
+            statement: left
+          };
+      } else {
+          throw "Syntax Error. Expected identifier but found " + (lookahead ? lookahead.value : "end of input") + (" near '" + (input.substr(lookahead.from)) + "'");
+        }
+        return result;
+    };
+    
+    condition = function() {
+      var left, result, right, type;
+      left = expression();
+      type = lookahead.value;
+      match("COMPARISON");
+      right = expression();
+      result = {
+        type: type,
+        left: left,
+        right: right
+      };
+      return result;
     };
     
     expression = function() {
@@ -165,7 +344,7 @@
       return result;
     };
 
-    tree = expression(input);
+    tree = block(input);
     if (lookahead != null) {
       throw "Syntax Error parsing statements. " + "Expected 'end of input' and found '" + input.substr(lookahead.from) + "'";
     }
