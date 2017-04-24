@@ -48,12 +48,114 @@ Norberto García Gazpar http://alu0100611519.github.io/
         a = 4;
         if a ==4 then a = 4 / 2
     end.
+    
+    Resultado:
+
+        {
+          "type": "PROGRAM",
+          "block": {
+            "type": "BLOCK",
+            "constants": [
+              {
+                "ID": "pi",
+                "value": 3.14
+              }
+            ],
+            "variables": [
+              {
+                "ID": "a"
+              }
+            ],
+            "functions": [],
+            "statement": {
+              "type": "multistatement",
+              "statements": [
+                {
+                  "type": "=",
+                  "left": {
+                    "type": "ID",
+                    "value": "a"
+                  },
+                  "right": {
+                    "type": "NUM",
+                    "value": 4
+                  }
+                },
+                {
+                  "type": "IF",
+                  "condition": {
+                    "type": "==",
+                    "left": {
+                      "type": "ID",
+                      "value": "a"
+                    },
+                    "right": {
+                      "type": "NUM",
+                      "value": 4
+                    }
+                  },
+                  "statement": {
+                    "type": "=",
+                    "left": {
+                      "type": "ID",
+                      "value": "a"
+                    },
+                    "right": {
+                      "type": "/",
+                      "left": {
+                        "type": "NUM",
+                        "value": 4
+                      },
+                      "right": {
+                        "type": "NUM",
+                        "value": 2
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
 
 ###Ejemplo 2
 
     const pi = 3.14;
     var a;
     a = pi.
+    
+    
+    Resultado:
+
+    {
+      "type": "PROGRAM",
+      "block": {
+        "type": "BLOCK",
+        "constants": [
+          {
+            "ID": "pi",
+            "value": 3.14
+          }
+        ],
+        "variables": [
+          {
+            "ID": "a"
+          }
+        ],
+        "functions": [],
+        "statement": {
+          "type": "=",
+          "left": {
+            "type": "ID",
+            "value": "a"
+          },
+          "right": {
+            "type": "ID",
+            "value": "pi"
+          }
+        }
+      }
+    }
 
 ###Ejemplo 3
 
