@@ -30,7 +30,7 @@
       ONELINECOMMENT: /\/\/.*/g,
       MULTIPLELINECOMMENT: /\/[*](.|\n)*?[*]\//g,
       COMPARISONOPERATOR: /[<>=!]=|[<>]/g,
-      ONECHAROPERATORS: /([=()&|;:,{}[\]])/g,
+      ONECHAROPERATORS: /([=()&|;:,{}[\].])/g,
       ADDOP: /[+-]/g,
       MULTOP: /[*\/]/g
     };
@@ -104,7 +104,7 @@
 
   var parse = function(input) {
     var condition, expression, factor, lookahead, match, statement, statements, term, tokens, tree;
-    var declaration, block;
+    var declaration, block, functions, program;
     tokens = input.tokens();
     lookahead = tokens.shift();
     match = function(t) {
@@ -118,19 +118,31 @@
       }
     };
     
-    block = function() {
-      var left, result, right, type;
-      
-      left = [declaration()];
-      while (lookahead && lookahead.type === ";") {
-        match(";");
-      
-        left.push(declaration());
+    program = function() {
+      var result, b;
+      b = block();
+      match(".");
+      result = {
+        type: "PROGRAM",
+        block: b
       }
+      
+      return result;
+    }
+    
+    block = function() {
+      var d, result, f, s;
+      
+      d = declaration();
+      f = functions();
+      s = statement();
  
       result = {
         type: "BLOCK",
-        block: left
+        constants: d["constants"],
+        variables: d["variables"],
+        functions: f["functions"],
+        statement: s
       };
       return result;
     };
@@ -162,9 +174,11 @@
           match("NUM");
           constants.push(left);
         }
-        
-        result["CONST"] = constants;
-      } else if (lookahead && lookahead.type === "VAR") {
+        match(";");
+        result["constants"] = constants;
+      } 
+      
+      if (lookahead && lookahead.type === "VAR") {
           var variables = [];
           match("VAR");  
           
@@ -181,32 +195,36 @@
             match("ID");
             variables.push(left);
           }
-          
-          result["VARIABLES"] = variables;
-      } else if (lookahead && lookahead.type === "PROCEDURE") {
+          match(";");
+          result["variables"] = variables;
+      }
+      
+      return result;
+    }
+    
+    functions = function() {
+      var id, result, b , array;
+      array = [];
+      result = {};
+      
+      while (lookahead && lookahead.type === "PROCEDURE") {
         match("PROCEDURE");
-        left = lookahead.value;
+        id = lookahead.value;
         match("ID");
         match("BEGIN");
-        right = block();
+        b = block();
         match("END");
         
-        result = {
+        array.push({
           type: "PROCEDURE",
-          id: left,
-          block: right
-        };
-      } else if (lookahead) {
-          left = statement();
-          result = {
-            type: "LEFT",
-            value: left
-          };
-        
-      } else {
-          throw "Syntax Error. Expected identifier but found " + (lookahead ? lookahead.value : "end of input") + (" near '" + (input.substr(lookahead.from)) + "'");
-        }
-        return result;
+          id: id,
+          block: b
+        });
+      }
+      
+      result["functions"] = array;
+      
+      return result
     }
     
     statement = function() {
@@ -232,8 +250,8 @@
           right = statement();
           result = {
             type: "WHILEDO",
-            left: left,
-            right: right
+            condition: left,
+            statements: right
           };
       } else if (lookahead && lookahead.type === "IF") {
         match("IF");
@@ -242,14 +260,14 @@
         right = statement();
         result = {
           type: "IF",
-          left: left,
-          right: right
+          condition: left,
+          statement: right
         };
       } else if (lookahead && lookahead.type === "CALL") {
           match("CALL");
           result = {
             type: "CALL",
-            value: lookahead.value
+            id: lookahead.value
           };
           match("ID");
       } else if (lookahead && lookahead.type === "BEGIN") {
@@ -266,14 +284,16 @@
           
           match("END");
           result = {
-            type: "BEGINEND",
-            statement: left
+            type: "multistatement",
+            statements: left
           };
       } else {
           throw "Syntax Error. Expected identifier but found " + (lookahead ? lookahead.value : "end of input") + (" near '" + (input.substr(lookahead.from)) + "'");
         }
         return result;
     };
+    
+  
     
     condition = function() {
       var left, result, right, type;
@@ -344,7 +364,7 @@
       return result;
     };
 
-    tree = block(input);
+    tree = program(input);
     if (lookahead != null) {
       throw "Syntax Error parsing statements. " + "Expected 'end of input' and found '" + input.substr(lookahead.from) + "'";
     }
